@@ -16,7 +16,8 @@ export function AuthProvider({ children }) {
         .then(res => setUser(res.data))
         .catch(() => {
           localStorage.removeItem('token');
-          toast?.info?.('Tu sesión expiró. Volvé a ingresar.');
+          setUser(null);
+          // No mostrar toast aquí - el PrivateRoute manejará la redirección
         })
         .finally(() => setLoading(false));
     } else {

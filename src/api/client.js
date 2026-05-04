@@ -19,8 +19,9 @@ client.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Solo limpiar token, NO redirigir aquí
+      // El AuthContext y PrivateRoute manejarán la redirección
       localStorage.removeItem('token');
-      window.location.href = '/login';
     }
     if (error.response?.status === 403) {
       const msg = error.response?.data?.error || 'No tenés permiso para hacer eso.';

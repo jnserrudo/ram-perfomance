@@ -59,8 +59,8 @@ function App() {
         <Route path="/admin/usuarios" element={<PrivateRoute adminOnly><AdminUsuarios /></PrivateRoute>} />
         <Route path="/admin/auditoria" element={<PrivateRoute adminOnly><AdminAuditoria /></PrivateRoute>} />
       </Route>
-      {/* Catch-all para rutas no encontradas */}
-      <Route path="*" element={<NotFound />} />
+      {/* Redirigir rutas no encontradas al inicio */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
