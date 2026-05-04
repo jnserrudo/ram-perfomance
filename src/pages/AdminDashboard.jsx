@@ -20,12 +20,15 @@ export default function AdminDashboard() {
   const cargarDatos = async () => {
     try {
       const [s, u, r, a, c] = await Promise.all([
-        client.get('/solicitudes'),
-        client.get('/usuarios'),
-        client.get('/reservas/mias').catch(() => ({ data: [] })),
-        client.get('/asistencias').catch(() => ({ data: [] })),
-        client.get('/compras').catch(() => ({ data: [] }))
+        client.get('/solicitudes').catch(err => { console.error('Error solicitudes:', err); return { data: [] }; }),
+        client.get('/usuarios').catch(err => { console.error('Error usuarios:', err); return { data: [] }; }),
+        client.get('/reservas/mias').catch(err => { console.error('Error reservas:', err); return { data: [] }; }),
+        client.get('/asistencias').catch(err => { console.error('Error asistencias:', err); return { data: [] }; }),
+        client.get('/compras').catch(err => { console.error('Error compras:', err); return { data: [] }; })
       ]);
+      
+      console.log('Datos cargados:', { solicitudes: s.data.length, usuarios: u.data.length });
+      
       setSolicitudes(s.data.filter(x => x.estado === 'PENDIENTE'));
 
       const hoy = new Date().toDateString();
@@ -36,7 +39,8 @@ export default function AdminDashboard() {
         creditosVendidos: c.data?.reduce((sum, x) => sum + x.creditosOtorgados, 0) || 0
       });
     } catch (e) {
-      console.error(e);
+      console.error('Error general en cargarDatos:', e);
+      setMensaje({ tipo: 'error', texto: 'Error al cargar datos. Verificá tu conexión.' });
     }
   };
 

@@ -3,7 +3,7 @@ import { Home, ArrowLeft } from 'lucide-react';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-forest flex items-center justify-center px-4">
+    <div className="min-h-screen bg-forest flex items-center justify-center px-4 text-cream">
       <div className="max-w-md w-full text-center">
         <div className="mb-8">
           <img src="/logo.jpeg" alt="RAM Performance" className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-cream/20" />
