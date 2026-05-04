@@ -163,7 +163,7 @@ export default function Landing() {
 
       {/* Footer */}
       <footer className="border-t border-cream/10 py-8 px-4 text-center text-cream/50 text-sm">
-        RAM Performance. Todos los derechos reservados.
+        RAM Performance - Desarrollado By JNSIX. Todos los derechos reservados. 
       </footer>
     </div>
   );
