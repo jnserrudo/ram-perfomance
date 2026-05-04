@@ -42,17 +42,17 @@ export default function Logros() {
   return (
     <div className="min-h-screen bg-forest pb-8">
       <div className="bg-forest-dark border-b border-cream/10">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="flex items-center gap-3">
-            <Trophy size={32} className="text-cream" />
-            <h1 className="font-display text-3xl md:text-4xl text-cream">MIS LOGROS</h1>
+        <div className="max-w-4xl mx-auto px-4 py-4 md:py-8">
+          <div className="flex items-center gap-2 md:gap-3">
+            <Trophy size={20} className="text-cream sm:w-8 sm:h-8" />
+            <h1 className="font-display text-lg sm:text-2xl md:text-4xl text-cream">MIS LOGROS</h1>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 mt-6">
+      <div className="max-w-4xl mx-auto px-4 mt-3 md:mt-6">
         {/* Ranking del mes */}
-        <div className="bg-forest-dark border border-cream/10 rounded-lg p-6 mb-6">
+        <div className="bg-forest-dark border border-cream/10 rounded-lg p-3 md:p-6 mb-3 md:mb-6">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp size={20} className="text-cream" />
             <h2 className="text-cream font-medium text-lg">Ranking del Mes</h2>

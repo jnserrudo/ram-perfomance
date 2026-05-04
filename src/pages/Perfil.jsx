@@ -73,9 +73,9 @@ export default function Perfil() {
   };
 
   return (
-    <div className="min-h-screen bg-forest py-8 px-4">
+    <div className="min-h-screen bg-forest py-4 md:py-8 px-4">
       <div className="max-w-lg mx-auto">
-        <h1 className="font-display text-3xl text-cream mb-6">MI PERFIL</h1>
+        <h1 className="font-display text-xl sm:text-3xl text-cream mb-3 md:mb-6">MI PERFIL</h1>
 
         {mensaje && (
           <div className={`mb-4 rounded-md px-4 py-3 text-sm ${
@@ -85,7 +85,7 @@ export default function Perfil() {
           </div>
         )}
 
-        <div className="bg-cream/5 border border-cream/10 rounded-lg p-6 mb-6">
+        <div className="bg-cream/5 border border-cream/10 rounded-lg p-3 md:p-6 mb-3 md:mb-6">
           <div className="flex items-center gap-2 mb-4">
             <User size={18} className="text-cream" />
             <h2 className="font-semibold text-cream">Datos personales</h2>
@@ -135,7 +135,7 @@ export default function Perfil() {
           </form>
         </div>
 
-        <div className="bg-cream/5 border border-cream/10 rounded-lg p-6">
+        <div className="bg-cream/5 border border-cream/10 rounded-lg p-3 md:p-6 mb-3 md:mb-6">
           <div className="flex items-center gap-2 mb-4">
             <Lock size={18} className="text-cream" />
             <h2 className="font-semibold text-cream">Cambiar contraseña</h2>
@@ -185,7 +185,7 @@ export default function Perfil() {
         </div>
 
         {/* Sección de Referidos */}
-        <div className="bg-cream/5 border border-cream/10 rounded-lg p-6">
+        <div className="bg-cream/5 border border-cream/10 rounded-lg p-3 md:p-6">
           <div className="flex items-center gap-2 mb-4">
             <Users size={18} className="text-cream" />
             <h2 className="font-semibold text-cream">Sistema de Referidos</h2>
@@ -193,7 +193,7 @@ export default function Perfil() {
           
           <div className="mb-6">
             <p className="text-cream/60 text-sm mb-3">
-              Compartí tu código con amigos. Cuando se registren y sean aprobados, <strong className="text-cream">ambos reciben 2 clases gratis</strong> 🎉
+              Compartí tu código con amigos. Cuando se registren y sean aprobados, <strong className="text-cream">ambos reciben 2 clases gratis</strong>.
             </p>
             
             <div className="bg-cream/10 border border-cream/20 rounded-lg p-4">

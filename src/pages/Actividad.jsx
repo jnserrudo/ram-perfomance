@@ -58,13 +58,13 @@ export default function Actividad() {
   };
 
   return (
-    <div className="min-h-screen bg-forest py-8 px-4">
+    <div className="min-h-screen bg-forest py-4 md:py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="font-display text-3xl text-cream">REGISTRO DE ACTIVIDAD</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-3 md:mb-6">
+          <h1 className="font-display text-lg sm:text-2xl text-cream">REGISTRO DE ACTIVIDAD</h1>
           <button
             onClick={() => setMostrarForm(!mostrarForm)}
-            className="flex items-center gap-2 bg-cream text-forest-dark px-4 py-2 rounded-md text-sm font-medium hover:bg-cream-dark transition-colors"
+            className="flex items-center justify-center gap-2 bg-cream text-forest-dark px-4 py-2 rounded-md text-sm font-medium hover:bg-cream-dark transition-colors"
           >
             {mostrarForm ? <X size={16} /> : <Plus size={16} />}
             {mostrarForm ? 'Cancelar' : 'Nueva actividad'}
@@ -80,7 +80,7 @@ export default function Actividad() {
         )}
 
         {mostrarForm && (
-          <div className="bg-cream/5 border border-cream/10 rounded-lg p-6 mb-6">
+          <div className="bg-cream/5 border border-cream/10 rounded-lg p-3 md:p-6 mb-3 md:mb-6">
             <h2 className="text-cream font-medium mb-4">Registrar nueva actividad</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>

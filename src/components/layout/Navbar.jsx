@@ -61,11 +61,11 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-forest-dark border-b border-cream/10">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14 md:h-16">
           {/* Logo */}
           <Link to={isAdmin ? '/admin' : '/dashboard'} className="flex items-center gap-2">
-            <img src="/icono.jpeg" alt="RAM" className="w-8 h-8 rounded-full object-cover" />
-            <span className="font-display text-xl tracking-wider text-cream">RAM</span>
+            <img src="/icono.jpeg" alt="RAM" className="w-7 h-7 md:w-8 md:h-8 rounded-full object-cover" />
+            <span className="font-display text-lg md:text-xl tracking-wider text-cream">RAM</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -95,7 +95,7 @@ export default function Navbar() {
                   onClick={() => { setNotifOpen(!notifOpen); setUserMenuOpen(false); setMenuOpen(false); }}
                   className="relative p-2 rounded-full hover:bg-cream/10 transition-colors"
                 >
-                  <Bell size={20} />
+                  <Bell size={18} className="md:w-5 md:h-5" />
                   {notifCount > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                       {notifCount}

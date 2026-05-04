@@ -105,18 +105,18 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-forest pb-8">
+    <div className="min-h-screen bg-forest pb-6">
       {/* Créditos Header */}
       <div className="bg-forest-dark border-b border-cream/10">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto px-4 py-4 md:py-8">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-cream/60 text-sm mb-1">Hola, {user?.nombre}</p>
-              <h1 className="font-display text-3xl md:text-4xl text-cream">TUS CRÉDITOS</h1>
+              <p className="text-cream/60 text-xs mb-0.5">Hola, {user?.nombre}</p>
+              <h1 className="font-display text-xl sm:text-3xl md:text-4xl text-cream">TUS CRÉDITOS</h1>
             </div>
             <div className="text-right">
-              <div className="font-display text-5xl md:text-6xl text-cream">{user?.creditos || 0}</div>
-              <p className="text-cream/60 text-sm">clases disponibles</p>
+              <div className="font-display text-3xl sm:text-5xl md:text-6xl text-cream">{user?.creditos || 0}</div>
+              <p className="text-cream/60 text-xs">clases</p>
             </div>
           </div>
 
@@ -135,10 +135,12 @@ export default function UserDashboard() {
                 const diasRestantes = Math.ceil((vence - new Date()) / (1000 * 60 * 60 * 24));
                 const alerta = diasRestantes <= 7;
                 return (
-                  <div key={pk.id} className={`flex items-center gap-2 rounded-md px-3 py-2 text-xs ${alerta ? 'bg-amber-500/10 border border-amber-500/20 text-amber-400' : 'bg-cream/5 border border-cream/10 text-cream/60'}`}>
-                    <Package size={14} />
-                    <span className="font-medium">{pk.paquete?.titulo || 'Pack'}</span>
-                    <span className="ml-auto">
+                  <div key={pk.id} className={`flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 rounded-md px-3 py-2 text-xs ${alerta ? 'bg-amber-500/10 border border-amber-500/20 text-amber-400' : 'bg-cream/5 border border-cream/10 text-cream/60'}`}>
+                    <div className="flex items-center gap-2">
+                      <Package size={14} />
+                      <span className="font-medium">{pk.paquete?.titulo || 'Pack'}</span>
+                    </div>
+                    <span className="sm:ml-auto">
                       {restantes}/{pk.creditosOtorgados} créditos · Vence: {vence.toLocaleDateString('es-AR')}
                       {alerta && ` (${diasRestantes} días)`}
                     </span>

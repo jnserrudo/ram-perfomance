@@ -35,10 +35,10 @@ export default function MiPlan() {
 
   if (!plan) {
     return (
-      <div className="min-h-screen bg-forest py-8 px-4">
+      <div className="min-h-screen bg-forest py-4 md:py-8 px-4">
         <div className="max-w-4xl mx-auto">
-          <h1 className="font-display text-3xl text-cream mb-6">MI PLAN DE ENTRENAMIENTO</h1>
-          <div className="bg-cream/5 border border-cream/10 rounded-lg p-8 text-center">
+          <h1 className="font-display text-lg sm:text-2xl text-cream mb-3 md:mb-6">MI PLAN DE ENTRENAMIENTO</h1>
+          <div className="bg-cream/5 border border-cream/10 rounded-lg p-4 md:p-6 text-center">
             <Dumbbell size={48} className="text-cream/20 mx-auto mb-4" />
             <p className="text-cream/60">Aún no tenés un plan de entrenamiento asignado</p>
             <p className="text-cream/40 text-sm mt-2">Consultá con tu entrenador para que te arme una rutina personalizada</p>
@@ -55,11 +55,11 @@ export default function MiPlan() {
   }, {});
 
   return (
-    <div className="min-h-screen bg-forest py-8 px-4">
+    <div className="min-h-screen bg-forest py-4 md:py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
-          <h1 className="font-display text-3xl text-cream mb-2">{plan.titulo}</h1>
-          <p className="text-cream/60">{plan.objetivo}</p>
+        <div className="mb-3 md:mb-6">
+          <h1 className="font-display text-lg sm:text-2xl text-cream mb-1.5">{plan.titulo}</h1>
+          <p className="text-cream/60 text-sm sm:text-base">{plan.objetivo}</p>
           <span className="inline-block mt-2 px-3 py-1 bg-cream/10 border border-cream/20 rounded-full text-cream text-xs">
             Nivel: {plan.nivel}
           </span>
