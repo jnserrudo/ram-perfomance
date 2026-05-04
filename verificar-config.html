@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación de Configuración - RAM Performance</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a2e1a;
+            color: #f5f5dc;
+        }
+        .container {
+            background: #2a3e2a;
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #f5f5dc33;
+        }
+        h1 {
+            color: #f5f5dc;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .check-item {
+            background: #1a2e1a;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #f5f5dc;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .ok { background: #28a745; color: white; }
+        .error { background: #dc3545; color: white; }
+        .warning { background: #ffc107; color: black; }
+        button {
+            background: #f5f5dc;
+            color: #1a2e1a;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #e5e5cc;
+        }
+        .result {
+            background: #1a2e1a;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .info {
+            background: #17a2b8;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Verificación de Configuración</h1>
+        <h2>RAM Performance - Producción</h2>
+
+        <div class="info">
+            <strong>⚠️ IMPORTANTE:</strong> Esta página te ayuda a verificar que la configuración de producción esté correcta.
+        </div>
+
+        <div class="check-item">
+            <strong>1. Variable de Entorno VITE_API_URL:</strong>
+            <div class="result" id="api-url">Cargando...</div>
+        </div>
+
+        <div class="check-item">
+            <strong>2. Formato de URL:</strong>
+            <div class="result" id="url-format">Verificando...</div>
+        </div>
+
+        <div class="check-item">
+            <strong>3. Conectividad con Backend:</strong>
+            <button onclick="testBackend()">Probar Conexión</button>
+            <div class="result" id="backend-test">Presiona el botón para probar</div>
+        </div>
+
+        <div class="check-item">
+            <strong>4. Endpoint de Login:</strong>
+            <button onclick="testLogin()">Probar Endpoint Login</button>
+            <div class="result" id="login-test">Presiona el botón para probar</div>
+        </div>
+
+        <div class="check-item">
+            <strong>5. Diagnóstico Completo:</strong>
+            <button onclick="runFullDiagnostic()">Ejecutar Diagnóstico</button>
+            <div class="result" id="diagnostic">Presiona el botón para ejecutar</div>
+        </div>
+    </div>
+
+    <script>
+        // Obtener la URL de la API
+        const API_URL = import.meta.env.VITE_API_URL || 'NO CONFIGURADA';
+        
+        // Mostrar la URL configurada
+        document.getElementById('api-url').innerHTML = `
+<strong>URL Configurada:</strong> ${API_URL}
+
+<strong>Origen:</strong> ${import.meta.env.VITE_API_URL ? 'Variable de entorno' : 'Valor por defecto'}
+        `;
+
+        // Verificar formato de URL
+        function checkUrlFormat() {
+            const urlElement = document.getElementById('url-format');
+            let status = '';
+            let message = '';
+
+            if (!API_URL || API_URL === 'NO CONFIGURADA') {
+                status = '<span class="status error">❌ ERROR</span>';
+                message = 'La variable VITE_API_URL no está configurada';
+            } else if (!API_URL.startsWith('http://') && !API_URL.startsWith('https://')) {
+                status = '<span class="status error">❌ ERROR CRÍTICO</span>';
+                message = `La URL NO tiene protocolo (http:// o https://)\n\n❌ Actual: ${API_URL}\n✅ Correcto: https://${API_URL}`;
+            } else if (API_URL.startsWith('http://') && !API_URL.includes('localhost')) {
+                status = '<span class="status warning">⚠️ ADVERTENCIA</span>';
+                message = 'La URL usa HTTP en lugar de HTTPS (no seguro para producción)';
+            } else if (API_URL.endsWith('/')) {
+                status = '<span class="status warning">⚠️ ADVERTENCIA</span>';
+                message = 'La URL termina con "/" (puede causar problemas)';
+            } else {
+                status = '<span class="status ok">✅ OK</span>';
+                message = 'El formato de la URL es correcto';
+            }
+
+            urlElement.innerHTML = status + '\n\n' + message;
+        }
+
+        // Probar conexión con el backend
+        async function testBackend() {
+            const resultElement = document.getElementById('backend-test');
+            resultElement.innerHTML = '⏳ Probando conexión...';
+
+            try {
+                const response = await fetch(`${API_URL}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultElement.innerHTML = `
+<span class="status ok">✅ CONEXIÓN EXITOSA</span>
+
+URL: ${API_URL}/health
+Status: ${response.status} ${response.statusText}
+Respuesta: ${JSON.stringify(data, null, 2)}
+                    `;
+                } else {
+                    resultElement.innerHTML = `
+<span class="status error">❌ ERROR</span>
+
+URL: ${API_URL}/health
+Status: ${response.status} ${response.statusText}
+Mensaje: El backend respondió pero con un error
+                    `;
+                }
+            } catch (error) {
+                resultElement.innerHTML = `
+<span class="status error">❌ ERROR DE CONEXIÓN</span>
+
+URL: ${API_URL}/health
+Error: ${error.message}
+
+Posibles causas:
+1. El backend no está activo
+2. La URL es incorrecta
+3. Hay problemas de CORS
+4. No hay conexión a internet
+                `;
+            }
+        }
+
+        // Probar endpoint de login
+        async function testLogin() {
+            const resultElement = document.getElementById('login-test');
+            resultElement.innerHTML = '⏳ Probando endpoint de login...';
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        dni: 'test',
+                        password: 'test'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.status === 404) {
+                    resultElement.innerHTML = `
+<span class="status error">❌ ERROR 404 - ENDPOINT NO ENCONTRADO</span>
+
+URL: ${API_URL}/auth/login
+Status: ${response.status}
+
+⚠️ PROBLEMA CRÍTICO:
+El endpoint /auth/login no existe en el backend.
+
+Posibles causas:
+1. La URL del backend es incorrecta
+2. El backend no está deployado correctamente
+3. Las rutas del backend no están configuradas
+                    `;
+                } else if (response.status === 401 || response.status === 400) {
+                    resultElement.innerHTML = `
+<span class="status ok">✅ ENDPOINT FUNCIONA</span>
+
+URL: ${API_URL}/auth/login
+Status: ${response.status} (esperado - credenciales inválidas)
+Mensaje: ${data.error || data.message}
+
+El endpoint existe y responde correctamente.
+El error 401/400 es normal con credenciales de prueba.
+                    `;
+                } else {
+                    resultElement.innerHTML = `
+<span class="status warning">⚠️ RESPUESTA INESPERADA</span>
+
+URL: ${API_URL}/auth/login
+Status: ${response.status}
+Respuesta: ${JSON.stringify(data, null, 2)}
+                    `;
+                }
+            } catch (error) {
+                resultElement.innerHTML = `
+<span class="status error">❌ ERROR DE CONEXIÓN</span>
+
+URL: ${API_URL}/auth/login
+Error: ${error.message}
+
+Posibles causas:
+1. El backend no está activo
+2. La URL es incorrecta (falta https://)
+3. Hay problemas de CORS
+                `;
+            }
+        }
+
+        // Diagnóstico completo
+        async function runFullDiagnostic() {
+            const resultElement = document.getElementById('diagnostic');
+            resultElement.innerHTML = '⏳ Ejecutando diagnóstico completo...\n\n';
+
+            let report = '';
+
+            // 1. Verificar URL
+            report += '=== 1. VERIFICACIÓN DE URL ===\n';
+            report += `URL Configurada: ${API_URL}\n`;
+            report += `Tiene protocolo: ${API_URL.startsWith('http') ? '✅ SÍ' : '❌ NO'}\n`;
+            report += `Es HTTPS: ${API_URL.startsWith('https') ? '✅ SÍ' : '⚠️ NO'}\n`;
+            report += `Termina con /: ${API_URL.endsWith('/') ? '⚠️ SÍ' : '✅ NO'}\n\n`;
+
+            // 2. Probar /health
+            report += '=== 2. PRUEBA DE /health ===\n';
+            try {
+                const healthResponse = await fetch(`${API_URL}/health`);
+                if (healthResponse.ok) {
+                    const healthData = await healthResponse.json();
+                    report += `✅ Backend activo\n`;
+                    report += `Status: ${healthResponse.status}\n`;
+                    report += `Respuesta: ${JSON.stringify(healthData)}\n\n`;
+                } else {
+                    report += `❌ Backend respondió con error ${healthResponse.status}\n\n`;
+                }
+            } catch (error) {
+                report += `❌ Error: ${error.message}\n\n`;
+            }
+
+            // 3. Probar /auth/login
+            report += '=== 3. PRUEBA DE /auth/login ===\n';
+            try {
+                const loginResponse = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dni: 'test', password: 'test' })
+                });
+                
+                if (loginResponse.status === 404) {
+                    report += `❌ ERROR 404 - Endpoint no encontrado\n`;
+                    report += `⚠️ PROBLEMA CRÍTICO: Verificar deployment del backend\n\n`;
+                } else {
+                    report += `✅ Endpoint existe\n`;
+                    report += `Status: ${loginResponse.status}\n\n`;
+                }
+            } catch (error) {
+                report += `❌ Error: ${error.message}\n\n`;
+            }
+
+            // 4. Recomendaciones
+            report += '=== 4. RECOMENDACIONES ===\n';
+            if (!API_URL.startsWith('https://')) {
+                report += '❌ URGENTE: Agregar https:// a VITE_API_URL en Netlify\n';
+            }
+            if (API_URL.endsWith('/')) {
+                report += '⚠️ Remover "/" al final de la URL\n';
+            }
+            report += '\n✅ Diagnóstico completado';
+
+            resultElement.innerHTML = report;
+        }
+
+        // Ejecutar verificación de formato al cargar
+        checkUrlFormat();
+    </script>
+</body>
+</html>

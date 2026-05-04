@@ -22,6 +22,7 @@ import AdminReportes from './pages/AdminReportes.jsx';
 import AdminUsuarios from './pages/AdminUsuarios.jsx';
 import AdminAuditoria from './pages/AdminAuditoria.jsx';
 import CambiarPassword from './pages/CambiarPassword.jsx';
+import NotFound from './pages/NotFound.jsx';
 
 function PrivateRoute({ children, adminOnly = false, allowCambioPassword = false }) {
   const { user, loading } = useAuth();
@@ -58,6 +59,8 @@ function App() {
         <Route path="/admin/usuarios" element={<PrivateRoute adminOnly><AdminUsuarios /></PrivateRoute>} />
         <Route path="/admin/auditoria" element={<PrivateRoute adminOnly><AdminAuditoria /></PrivateRoute>} />
       </Route>
+      {/* Catch-all para rutas no encontradas */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
