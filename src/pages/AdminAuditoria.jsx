@@ -6,7 +6,8 @@ const ACCIONES = {
   CREATE: 'Crear', UPDATE: 'Modificar', DELETE: 'Eliminar',
   LOGIN: 'Ingreso', LOGOUT: 'Salida', CHECKIN: 'Check-in',
   RESERVA: 'Reserva', CANCELACION: 'Cancelación', COMPRA: 'Compra',
-  APROBACION: 'Aprobación', RECHAZO: 'Rechazo', OTRO: 'Otro'
+  APROBACION: 'Aprobación', RECHAZO: 'Rechazo', CREDITOS: 'Créditos',
+  REACTIVAR: 'Reactivar', DESACTIVAR: 'Desactivar', OTRO: 'Otro'
 };
 
 const ENTIDADES = {
