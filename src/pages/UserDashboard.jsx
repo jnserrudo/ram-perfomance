@@ -3,7 +3,7 @@ import client from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import {
   Calendar, Clock, CreditCard, CheckCircle, XCircle, Dumbbell,
-  ChevronLeft, ChevronRight, AlertTriangle, Users, Package, TrendingUp, BarChart3
+  ChevronLeft, ChevronRight, AlertTriangle, Users, Package, TrendingUp, BarChart3, Loader2
 } from 'lucide-react';
 import AsistenciasChart from '../components/charts/AsistenciasChart.jsx';
 import ClasesPorTipoChart from '../components/charts/ClasesPorTipoChart.jsx';
@@ -23,6 +23,7 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [mensaje, setMensaje] = useState(null);
   const [diaSeleccionado, setDiaSeleccionado] = useState(() => new Date().getDay());
+  const [procesandoId, setProcesandoId] = useState(null);
 
   useEffect(() => {
     cargarDatos();
@@ -30,20 +31,28 @@ export default function UserDashboard() {
     return () => clearInterval(interval);
   }, [semanaOffset]);
 
-  const cargarDatos = async () => {
+  const cargarDatos = async (ligeros = false) => {
     try {
-      const [h, r, c, p, e] = await Promise.all([
-        client.get('/horarios/semana'),
-        client.get('/reservas/mias'),
-        client.get('/comunicados'),
-        client.get('/compras/mias'),
-        client.get(`/estadisticas/usuario/${user.id}`)
-      ]);
-      setHorarios(h.data);
-      setReservas(r.data);
-      setComunicados(c.data);
-      setEstadisticas(e.data);
-      setPacks(p.data.filter(pk => pk.estado === 'ACTIVO'));
+      const endpoints = ligeros 
+        ? [client.get('/horarios/semana'), client.get('/reservas/mias')]
+        : [
+            client.get('/horarios/semana'),
+            client.get('/reservas/mias'),
+            client.get('/comunicados'),
+            client.get('/compras/mias'),
+            client.get(`/estadisticas/usuario/${user.id}`)
+          ];
+
+      const resultados = await Promise.all(endpoints);
+      
+      setHorarios(resultados[0].data);
+      setReservas(resultados[1].data);
+      
+      if (!ligeros) {
+        setComunicados(resultados[2].data);
+        setEstadisticas(resultados[4].data);
+        setPacks(resultados[3].data.filter(pk => pk.estado === 'ACTIVO'));
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -61,23 +70,31 @@ export default function UserDashboard() {
   };
 
   const reservar = async (horarioId, fecha) => {
+    setProcesandoId(horarioId);
     try {
       const res = await client.post('/reservas', { horarioId, fecha: fecha.toISOString() });
       setMensaje({ tipo: 'success', texto: res.data.message });
-      cargarDatos();
+      // Recarga rápida
+      await cargarDatos(true);
     } catch (err) {
       setMensaje({ tipo: 'error', texto: err.response?.data?.error || 'No se pudo reservar' });
+    } finally {
+      setProcesandoId(null);
     }
     setTimeout(() => setMensaje(null), 4000);
   };
 
-  const cancelar = async (reservaId) => {
+  const cancelar = async (reservaId, horarioId) => {
+    setProcesandoId(horarioId);
     try {
       const res = await client.delete(`/reservas/${reservaId}`);
       setMensaje({ tipo: 'success', texto: res.data.message });
-      cargarDatos();
+      // Recarga rápida
+      await cargarDatos(true);
     } catch (err) {
       setMensaje({ tipo: 'error', texto: err.response?.data?.error || 'No se pudo cancelar' });
+    } finally {
+      setProcesandoId(null);
     }
     setTimeout(() => setMensaje(null), 4000);
   };
@@ -266,52 +283,95 @@ export default function UserDashboard() {
               const cupoTotal = h.cupoMaximo;
               const cupoDisponible = cupoTotal - cupoOcupado;
               const estaLleno = cupoDisponible <= 0 && !miReserva;
+              const estaProcesando = procesandoId === h.id;
+              
+              const hoy = new Date();
+              hoy.setHours(0, 0, 0, 0);
+              const fechaBoton = new Date(fechaSeleccionada);
+              fechaBoton.setHours(0, 0, 0, 0);
+              const esPasado = fechaBoton < hoy;
 
               return (
                 <div
                   key={h.id}
-                  className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
+                  className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all duration-300 ${
                     miReserva
-                      ? 'bg-green-500/5 border-green-500/20'
+                      ? 'bg-green-500/10 border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.1)]'
                       : estaLleno
-                        ? 'bg-cream/3 border-cream/5 opacity-50'
-                        : 'bg-cream/5 border-cream/10 hover:border-cream/20'
+                        ? 'bg-white/2 border-white/5 opacity-60 grayscale'
+                        : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 shadow-sm'
                   }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="text-center min-w-[60px]">
-                      <div className="font-display text-2xl text-cream">{h.horaInicio}:00</div>
-                      <div className="text-cream/50 text-xs">{BLOQUES[h.bloque]}</div>
+                  <div className="flex items-center gap-4 mb-4 sm:mb-0">
+                    <div className="flex flex-col items-center justify-center min-w-[70px] py-2 bg-forest-dark/50 rounded-lg border border-white/5">
+                      <div className="font-display text-2xl text-cream leading-none">{h.horaInicio}:00</div>
+                      <div className="text-cream/40 text-[10px] uppercase font-bold tracking-tighter mt-1">{BLOQUES[h.bloque]}</div>
                     </div>
                     <div>
-                      <div className="font-medium text-cream">{h.tipoClase.titulo}</div>
-                      <div className="text-cream/60 text-sm">{h.tipoClase.descripcion}</div>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Users size={14} className="text-cream/40" />
-                        <span className={`text-xs ${cupoDisponible <= 2 ? 'text-orange-400' : 'text-cream/50'}`}>
-                          {cupoDisponible} lugares libres de {cupoTotal}
+                      <div className="flex items-center gap-2">
+                        <div className="font-bold text-cream text-lg tracking-tight">{h.tipoClase.titulo}</div>
+                        {miReserva && <span className="bg-green-500 text-forest-dark text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter">Tu Turno</span>}
+                      </div>
+                      <p className="text-cream/50 text-xs line-clamp-1 max-w-[200px] md:max-w-xs">{h.tipoClase.descripcion}</p>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <div className="flex -space-x-1">
+                          {[...Array(Math.min(3, cupoOcupado))].map((_, i) => (
+                            <div key={i} className="w-4 h-4 rounded-full border border-forest bg-cream/10 flex items-center justify-center">
+                              <Users size={8} className="text-cream/40" />
+                            </div>
+                          ))}
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase tracking-tight ${
+                          estaLleno ? 'text-red-400' : cupoDisponible <= 3 ? 'text-orange-400' : 'text-cream/40'
+                        }`}>
+                          {estaLleno ? 'Cupo Completo' : `${cupoDisponible} lugares libres`}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div>
+                  <div className="flex items-center gap-3">
                     {miReserva ? (
                       <button
-                        onClick={() => cancelar(miReserva.id)}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-red-500/10 text-red-400 text-sm hover:bg-red-500/20 transition-colors"
+                        onClick={() => cancelar(miReserva.id, h.id)}
+                        disabled={estaProcesando || esPasado}
+                        className={`w-full py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                          estaProcesando || esPasado
+                            ? 'bg-red-500/20 text-red-500/40 cursor-not-allowed'
+                            : 'bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/30'
+                        }`}
                       >
-                        <XCircle size={16} /> Cancelar
+                        {estaProcesando ? (
+                          <Loader2 className="animate-spin" size={18} />
+                        ) : (
+                          <>
+                            <X size={18} />
+                            Cancelar
+                          </>
+                        )}
                       </button>
-                    ) : estaLleno ? (
-                      <span className="text-cream/30 text-sm font-medium">Completo</span>
                     ) : (
                       <button
                         onClick={() => reservar(h.id, fechaSeleccionada)}
-                        disabled={!user?.creditos}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-cream text-forest-dark text-sm font-medium hover:bg-cream-dark transition-colors disabled:opacity-40"
+                        disabled={!user?.creditos || estaLleno || estaProcesando || esPasado}
+                        className={`w-full py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                          !user?.creditos || estaLleno || estaProcesando || esPasado
+                            ? 'bg-white/5 text-white/20 cursor-not-allowed'
+                            : 'bg-cream text-forest-dark hover:bg-white shadow-lg shadow-cream/20'
+                        }`}
                       >
-                        <CheckCircle size={16} /> Reservar
+                        {estaProcesando ? (
+                          <Loader2 className="animate-spin" size={18} />
+                        ) : esPasado ? (
+                          'Finalizado'
+                        ) : estaLleno ? (
+                          'Cupo Lleno'
+                        ) : (
+                          <>
+                            <Calendar size={18} />
+                            Reservar
+                          </>
+                        )}
                       </button>
                     )}
                   </div>

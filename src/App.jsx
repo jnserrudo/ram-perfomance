@@ -20,6 +20,7 @@ import AdminCompras from './pages/AdminCompras.jsx';
 import AdminComunicados from './pages/AdminComunicados.jsx';
 import AdminReportes from './pages/AdminReportes.jsx';
 import AdminUsuarios from './pages/AdminUsuarios.jsx';
+import AdminInscriptos from './pages/AdminInscriptos.jsx';
 import AdminAuditoria from './pages/AdminAuditoria.jsx';
 import CambiarPassword from './pages/CambiarPassword.jsx';
 import NotFound from './pages/NotFound.jsx';
@@ -57,6 +58,7 @@ function App() {
         <Route path="/admin/comunicados" element={<PrivateRoute adminOnly><AdminComunicados /></PrivateRoute>} />
         <Route path="/admin/reportes" element={<PrivateRoute adminOnly><AdminReportes /></PrivateRoute>} />
         <Route path="/admin/usuarios" element={<PrivateRoute adminOnly><AdminUsuarios /></PrivateRoute>} />
+        <Route path="/admin/inscriptos" element={<PrivateRoute adminOnly><AdminInscriptos /></PrivateRoute>} />
         <Route path="/admin/auditoria" element={<PrivateRoute adminOnly><AdminAuditoria /></PrivateRoute>} />
       </Route>
       {/* Redirigir rutas no encontradas al inicio */}

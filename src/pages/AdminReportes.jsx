@@ -5,6 +5,7 @@ import {
   PieChart, Pie, Cell, LineChart, Line
 } from 'recharts';
 import { BarChart3, Users, TrendingUp, DollarSign } from 'lucide-react';
+import GuiaContextual from '../components/common/GuiaContextual.jsx';
 
 const COLORS = ['#EAE5C9', '#D4CFA8', '#3D503D', '#2F3E2F', '#4A5D4A'];
 
@@ -32,6 +33,16 @@ export default function AdminReportes() {
     <div className="min-h-screen bg-forest py-8 px-4">
       <div className="max-w-5xl mx-auto">
         <h1 className="font-display text-3xl text-cream mb-6">REPORTES</h1>
+
+        <GuiaContextual 
+          seccion="reportes" 
+          pasos={[
+            { titulo: 'Asistencias', descripcion: 'Visualizá qué clases tienen más concurrencia para optimizar tus horarios.' },
+            { titulo: 'Ranking Usuarios', descripcion: 'Identificá a tus alumnos más fieles y activos en el gimnasio.' },
+            { titulo: 'Balance Financiero', descripcion: 'Revisá la recaudación total y la evolución de ventas mes a mes.' },
+            { titulo: 'Pestañas', descripcion: 'Navegá entre las diferentes categorías de reportes usando los botones superiores.' }
+          ]} 
+        />
 
         <div className="flex gap-1 mb-6 bg-cream/5 rounded-lg p-1">
           {['asistencias', 'usuarios', 'financiero'].map(t => (

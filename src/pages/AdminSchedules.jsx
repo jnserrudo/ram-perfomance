@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client.js';
 import { Plus, Pencil, Trash2, X, Clock, Users } from 'lucide-react';
+import GuiaContextual from '../components/common/GuiaContextual.jsx';
 
 const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 const HORAS_MANANA = [7, 8, 9, 10];
@@ -84,6 +85,16 @@ export default function AdminSchedules() {
             <Plus size={18} /> Nuevo horario
           </button>
         </div>
+
+        <GuiaContextual 
+          seccion="horarios" 
+          pasos={[
+            { titulo: 'Configurar Horarios', descripcion: 'Definí la grilla semanal de clases. Cada horario se repite todas las semanas.' },
+            { titulo: 'Asignar Clases', descripcion: 'Elegí el tipo de clase para cada horario (Musculación, HIIT, etc.).' },
+            { titulo: 'Bloques y Cupos', descripcion: 'Organizá por bloques (Mañana/Tarde/Noche) y definí el límite de personas por turno.' },
+            { titulo: 'Edición Rápida', descripcion: 'Podés modificar o eliminar horarios existentes usando los iconos en cada tarjeta.' }
+          ]} 
+        />
 
         {mensaje && (
           <div className={`mb-4 rounded-md px-4 py-3 text-sm ${

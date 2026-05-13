@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client.js';
 import { Plus, Pencil, Trash2, Dumbbell, X, CheckCircle } from 'lucide-react';
+import GuiaContextual from '../components/common/GuiaContextual.jsx';
 
 export default function AdminClasses() {
   const [clases, setClases] = useState([]);
@@ -67,6 +68,16 @@ export default function AdminClasses() {
             <Plus size={18} /> Nueva clase
           </button>
         </div>
+
+        <GuiaContextual 
+          seccion="clases" 
+          pasos={[
+            { titulo: 'Definir Clases', descripcion: 'Creá los tipos de entrenamiento que ofrecés (ej: Crossfit, Boxeo, Yoga).' },
+            { titulo: 'Nombre y Detalle', descripcion: 'Asigná un título claro y una breve descripción de lo que se hace en la clase.' },
+            { titulo: 'Uso en Horarios', descripcion: 'Una vez creada, podrás asignar esta clase a diferentes días y horarios en la sección "Horarios".' },
+            { titulo: 'Mantenimiento', descripcion: 'Podés editar los nombres o eliminar tipos de clase que ya no se dicten.' }
+          ]} 
+        />
 
         {mensaje && (
           <div className={`mb-4 rounded-md px-4 py-3 text-sm ${

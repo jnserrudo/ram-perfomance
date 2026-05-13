@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client.js';
 import { CreditCard, CheckCircle, Search } from 'lucide-react';
+import GuiaContextual from '../components/common/GuiaContextual.jsx';
 
 export default function AdminCompras() {
   const [usuarios, setUsuarios] = useState([]);
@@ -44,6 +45,16 @@ export default function AdminCompras() {
     <div className="min-h-screen bg-forest py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <h1 className="font-display text-3xl text-cream mb-6">REGISTRAR VENTA</h1>
+
+        <GuiaContextual 
+          seccion="ventas" 
+          pasos={[
+            { titulo: 'Identificar Alumno', descripcion: 'Buscá al alumno por su nombre o DNI en el buscador principal.' },
+            { titulo: 'Elegir Paquete', descripcion: 'Seleccioná el paquete de clases que el alumno desea adquirir.' },
+            { titulo: 'Método de Pago', descripcion: 'Indicá si el pago fue en efectivo, transferencia o tarjeta para el registro contable.' },
+            { titulo: 'Acreditación', descripcion: 'Al registrar, los créditos se suman automáticamente al perfil del alumno y se le envía un WhatsApp.' }
+          ]} 
+        />
 
         {mensaje && <div className={`mb-4 rounded-md px-4 py-3 text-sm ${mensaje.tipo === 'success' ? 'bg-green-500/10 border border-green-500/30 text-green-400' : 'bg-red-500/10 border border-red-500/30 text-red-400'}`}>{mensaje.texto}</div>}
 

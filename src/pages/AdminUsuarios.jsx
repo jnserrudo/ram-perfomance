@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client.js';
 import { Search, UserCheck, UserX, CreditCard, Pencil, X, CheckCircle, Plus, UserPlus, Copy, Check } from 'lucide-react';
+import GuiaContextual from '../components/common/GuiaContextual.jsx';
 
 export default function AdminUsuarios() {
   const [usuarios, setUsuarios] = useState([]);
@@ -81,6 +82,16 @@ export default function AdminUsuarios() {
             <Plus size={16} /> Nuevo usuario
           </button>
         </div>
+
+        <GuiaContextual 
+          seccion="usuarios" 
+          pasos={[
+            { titulo: 'Listado y Búsqueda', descripcion: 'Visualizá todos los alumnos. Usá el buscador para filtrar por DNI, Nombre o Email.' },
+            { titulo: 'Gestión de Créditos', descripcion: 'Hacé click en el icono de tarjeta para editar los créditos disponibles del alumno manualmente.' },
+            { titulo: 'Estado de Cuenta', descripcion: 'Podés activar o desactivar usuarios. Los inactivos no podrán reservar ni entrar al gimnasio.' },
+            { titulo: 'Nuevo Registro', descripcion: 'Registrá nuevos alumnos. Se les enviará un WhatsApp con sus credenciales automáticamente.' }
+          ]} 
+        />
 
         {mensaje && <div className={`mb-4 rounded-md px-4 py-3 text-sm ${mensaje.tipo === 'success' ? 'bg-green-500/10 border border-green-500/30 text-green-400' : 'bg-red-500/10 border border-red-500/30 text-red-400'}`}>{mensaje.texto}</div>}
 

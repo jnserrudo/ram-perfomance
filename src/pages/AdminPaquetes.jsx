@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client.js';
 import { Plus, Pencil, Trash2, X, ShoppingBag } from 'lucide-react';
+import GuiaContextual from '../components/common/GuiaContextual.jsx';
 
 export default function AdminPaquetes() {
   const [paquetes, setPaquetes] = useState([]);
@@ -49,6 +50,17 @@ export default function AdminPaquetes() {
             <Plus size={18} /> Nuevo paquete
           </button>
         </div>
+
+        <GuiaContextual 
+          seccion="paquetes" 
+          pasos={[
+            { titulo: 'Crear Ofertas', descripcion: 'Definí los paquetes de créditos que los alumnos podrán comprar (ej: Pack 12 clases).' },
+            { titulo: 'Precio y Créditos', descripcion: 'Asigná cuántas clases incluye el paquete y su valor en pesos.' },
+            { titulo: 'Visibilidad', descripcion: 'Los paquetes activos aparecerán automáticamente en la app del alumno.' },
+            { titulo: 'Actualización', descripcion: 'Podés ajustar los precios en cualquier momento. Esto no afectará a quienes ya compraron.' }
+          ]} 
+        />
+
         {mensaje && <div className={`mb-4 rounded-md px-4 py-3 text-sm ${mensaje.tipo === 'success' ? 'bg-green-500/10 border border-green-500/30 text-green-400' : 'bg-red-500/10 border border-red-500/30 text-red-400'}`}>{mensaje.texto}</div>}
 
         <div className="bg-cream/5 border border-cream/10 rounded-lg divide-y divide-cream/5">
