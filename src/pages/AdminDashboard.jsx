@@ -5,7 +5,7 @@ import {
   Users, UserCheck, Clock, CreditCard, AlertCircle,
   ChevronRight, CheckCircle, XCircle, Dumbbell,
   TrendingUp, Calendar, ArrowUpRight, ArrowDownRight,
-  Target, BarChart3
+  Target, BarChart3, Loader2
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -17,7 +17,9 @@ export default function AdminDashboard() {
   const [solicitudes, setSolicitudes] = useState([]);
   const [data, setData] = useState(null);
   const [cargando, setCargando] = useState(true);
+  const [procesandoId, setProcesandoId] = useState(null);
   const [mensaje, setMensaje] = useState(null);
+  const [modalDuplicado, setModalDuplicado] = useState({ show: false, data: null, solicitudId: null });
 
   useEffect(() => {
     cargarDatos();
@@ -42,15 +44,32 @@ export default function AdminDashboard() {
     }
   };
 
-  const aprobar = async (id, estado) => {
+  const aprobar = async (id, estado, forzar = false) => {
+    setProcesandoId(id);
     try {
-      await client.put(`/solicitudes/${id}/aprobar`, { estado });
-      setMensaje({ tipo: 'success', texto: estado === 'APROBADA' ? 'Solicitud aprobada' : 'Solicitud rechazada' });
+      await client.put(`/solicitudes/${id}/aprobar`, { estado, forzar });
+      setMensaje({ 
+        tipo: 'success', 
+        texto: forzar ? 'Duplicado resuelto correctamente' : (estado === 'APROBADA' ? 'Solicitud aprobada' : 'Solicitud rechazada') 
+      });
+      setModalDuplicado({ show: false, data: null, solicitudId: null });
       cargarDatos();
     } catch (err) {
-      setMensaje({ tipo: 'error', texto: 'Error al procesar' });
+      if (err.response?.status === 409) {
+        // Manejar duplicado con el modal
+        setModalDuplicado({ 
+          show: true, 
+          data: err.response.data.usuario, 
+          solicitudId: id 
+        });
+      } else {
+        const errorMsg = err.response?.data?.error || 'Error al procesar';
+        setMensaje({ tipo: 'error', texto: errorMsg });
+      }
+    } finally {
+      setProcesandoId(null);
     }
-    setTimeout(() => setMensaje(null), 3000);
+    setTimeout(() => setMensaje(null), 5000);
   };
 
   const pasosGuia = [
@@ -262,15 +281,19 @@ export default function AdminDashboard() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => aprobar(s.id, 'APROBADA')}
-                      className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-green-500/10 text-green-400 text-xs font-bold hover:bg-green-500/20 transition-all border border-green-500/20"
+                      disabled={procesandoId !== null}
+                      className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-green-500/10 text-green-400 text-xs font-bold hover:bg-green-500/20 transition-all border border-green-500/20 disabled:opacity-50"
                     >
-                      <CheckCircle size={14} /> Aprobar
+                      {procesandoId === s.id ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                      Aprobar
                     </button>
                     <button
                       onClick={() => aprobar(s.id, 'RECHAZADA')}
-                      className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-red-500/10 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all border border-red-500/20"
+                      disabled={procesandoId !== null}
+                      className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-red-500/10 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all border border-red-500/20 disabled:opacity-50"
                     >
-                      <XCircle size={14} /> Rechazar
+                      {procesandoId === s.id ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
+                      Rechazar
                     </button>
                   </div>
                 </div>
@@ -279,6 +302,56 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
+
+      {/* Modal Usuario Duplicado */}
+      {modalDuplicado.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-forest-dark/80 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-forest border border-cream/20 rounded-3xl p-8 max-w-md w-full shadow-2xl shadow-black/50">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-orange-500/10 rounded-full flex items-center justify-center mb-6 border border-orange-500/20">
+                <AlertCircle className="text-orange-400" size={32} />
+              </div>
+              
+              <h3 className="text-2xl font-display text-cream mb-2 uppercase tracking-wide">DNI ya registrado</h3>
+              
+              <div className="bg-cream/5 border border-cream/10 rounded-2xl p-4 w-full mb-6">
+                <p className="text-cream font-bold text-lg mb-1">{modalDuplicado.data?.nombre} {modalDuplicado.data?.apellido}</p>
+                <p className="text-cream/40 text-[10px] font-black uppercase tracking-widest">
+                  Estado actual: {modalDuplicado.data?.activo ? 'ACTIVO' : 'INACTIVO'}
+                </p>
+              </div>
+
+              <div className="space-y-4 text-cream/60 text-sm leading-relaxed mb-8">
+                {modalDuplicado.data?.activo ? (
+                  <p>
+                    Este usuario <span className="text-cream font-bold">ya está activo</span> en el sistema. Probablemente sea una solicitud duplicada. ¿Querés marcarla como resuelta?
+                  </p>
+                ) : (
+                  <p>
+                    Este es un <span className="text-cream font-bold">alumno antiguo</span> que se encuentra inactivo. ¿Querés reactivarlo y aprobar esta nueva solicitud?
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 w-full">
+                <button
+                  onClick={() => setModalDuplicado({ show: false, data: null, solicitudId: null })}
+                  className="py-3 rounded-xl border border-cream/10 text-cream/40 text-xs font-bold uppercase tracking-widest hover:bg-cream/5 transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => aprobar(modalDuplicado.solicitudId, 'APROBADA', true)}
+                  disabled={procesandoId !== null}
+                  className="py-3 rounded-xl bg-cream text-forest-dark text-xs font-black uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-lg shadow-cream/10"
+                >
+                  {procesandoId ? <Loader2 size={16} className="animate-spin" /> : (modalDuplicado.data?.activo ? 'Resolver' : 'Reactivar')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
