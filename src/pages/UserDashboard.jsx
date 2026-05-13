@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { QRCodeCanvas } from 'qrcode.react';
 import {
   Calendar, Clock, CreditCard, CheckCircle, XCircle, Dumbbell,
-  ChevronLeft, ChevronRight, AlertTriangle, Users, Package, TrendingUp, BarChart3, Loader2
+  ChevronLeft, ChevronRight, AlertTriangle, Users, Package, TrendingUp, BarChart3, Loader2,
+  QrCode, Flame
 } from 'lucide-react';
 import AsistenciasChart from '../components/charts/AsistenciasChart.jsx';
 import ClasesPorTipoChart from '../components/charts/ClasesPorTipoChart.jsx';
@@ -14,6 +16,7 @@ const BLOQUES = { MANANA: 'Mañana', TARDE: 'Tarde', NOCHE: 'Noche' };
 
 export default function UserDashboard() {
   const { user } = useAuth();
+  const [showQR, setShowQR] = useState(false);
   const [horarios, setHorarios] = useState([]);
   const [reservas, setReservas] = useState([]);
   const [comunicados, setComunicados] = useState([]);
@@ -109,7 +112,7 @@ export default function UserDashboard() {
     return reservas.find(r =>
       r.horarioId === horarioId &&
       new Date(r.fecha).toDateString() === f.toDateString() &&
-      r.estado === 'RESERVADA'
+      (r.estado === 'RESERVADA' || r.estado === 'EN_ESPERA')
     );
   };
 
@@ -128,12 +131,53 @@ export default function UserDashboard() {
         <div className="max-w-4xl mx-auto px-4 py-4 md:py-8">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-cream/60 text-xs mb-0.5">Hola, {user?.nombre}</p>
+              <div className="flex items-center gap-3 mb-1">
+                <p className="text-cream/60 text-xs">Hola, {user?.nombre}</p>
+                <button
+                  onClick={() => setShowQR(true)}
+                  className="bg-cream/10 hover:bg-cream/20 text-cream p-1.5 rounded-lg transition-colors flex items-center gap-2"
+                  title="Mi QR de Acceso"
+                >
+                  <QrCode size={14} />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Mi QR</span>
+                </button>
+              </div>
               <h1 className="font-display text-xl sm:text-3xl md:text-4xl text-cream">TUS CRÉDITOS</h1>
             </div>
             <div className="text-right">
               <div className="font-display text-3xl sm:text-5xl md:text-6xl text-cream">{user?.creditos || 0}</div>
               <p className="text-cream/60 text-xs">clases</p>
+            </div>
+          </div>
+
+          {/* Tarjetas Rápidas: Racha y Próximo Vencimiento */}
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className="bg-orange-500/10 border border-orange-500/20 rounded-2xl p-4 flex items-center gap-3">
+              <div className="bg-orange-500/20 p-2 rounded-xl text-orange-400">
+                <TrendingUp size={20} />
+              </div>
+              <div>
+                <div className="flex items-center gap-1">
+                  <span className="font-display text-2xl text-cream">{estadisticas?.racha || 0}</span>
+                  <Flame size={16} className="text-orange-400 animate-pulse" />
+                </div>
+                <p className="text-cream/40 text-[10px] font-bold uppercase tracking-tighter">Días Seguidos</p>
+              </div>
+            </div>
+
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 flex items-center gap-3">
+              <div className="bg-blue-500/20 p-2 rounded-xl text-blue-400">
+                <Calendar size={20} />
+              </div>
+              <div>
+                <div className="font-display text-xl text-cream">
+                  {estadisticas?.proximoVencimiento 
+                    ? new Date(estadisticas.proximoVencimiento).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
+                    : '--/--'
+                  }
+                </div>
+                <p className="text-cream/40 text-[10px] font-bold uppercase tracking-tighter">Próx. Vence</p>
+              </div>
             </div>
           </div>
 
@@ -143,7 +187,6 @@ export default function UserDashboard() {
               Te quedan pocas clases. Acercate a recepción para recargar.
             </div>
           )}
-
           {packs.length > 0 && (
             <div className="mt-4 space-y-2">
               {packs.map(pk => {
@@ -284,6 +327,7 @@ export default function UserDashboard() {
               const cupoDisponible = cupoTotal - cupoOcupado;
               const estaLleno = cupoDisponible <= 0 && !miReserva;
               const estaProcesando = procesandoId === h.id;
+              const esEspera = miReserva?.estado === 'EN_ESPERA';
               
               const hoy = new Date();
               hoy.setHours(0, 0, 0, 0);
@@ -296,81 +340,68 @@ export default function UserDashboard() {
                   key={h.id}
                   className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all duration-300 ${
                     miReserva
-                      ? 'bg-green-500/10 border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.1)]'
+                      ? esEspera
+                        ? 'bg-amber-500/10 border-amber-500/30'
+                        : 'bg-green-500/10 border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.1)]'
                       : estaLleno
-                        ? 'bg-white/2 border-white/5 opacity-60 grayscale'
+                        ? 'bg-white/2 border-white/5 opacity-80'
                         : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 shadow-sm'
                   }`}
                 >
                   <div className="flex items-center gap-4 mb-4 sm:mb-0">
                     <div className="flex flex-col items-center justify-center min-w-[70px] py-2 bg-forest-dark/50 rounded-lg border border-white/5">
                       <div className="font-display text-2xl text-cream leading-none">{h.horaInicio}:00</div>
-                      <div className="text-cream/40 text-[10px] uppercase font-bold tracking-tighter mt-1">{BLOQUES[h.bloque]}</div>
+                      <div className="text-[10px] text-cream/40 font-bold uppercase mt-1 tracking-tighter">HS</div>
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <div className="font-bold text-cream text-lg tracking-tight">{h.tipoClase.titulo}</div>
-                        {miReserva && <span className="bg-green-500 text-forest-dark text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter">Tu Turno</span>}
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-display text-lg text-cream tracking-wide">{h.tipoClase?.titulo}</h3>
+                        {miReserva && (
+                          <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${esEspera ? 'bg-amber-500 text-white shadow-[0_0_10px_rgba(245,158,11,0.2)]' : 'bg-green-500 text-white shadow-[0_0_10px_rgba(34,197,94,0.2)]'}`}>
+                            {esEspera ? 'En Espera' : 'Reservado'}
+                          </span>
+                        )}
                       </div>
-                      <p className="text-cream/50 text-xs line-clamp-1 max-w-[200px] md:max-w-xs">{h.tipoClase.descripcion}</p>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <div className="flex -space-x-1">
-                          {[...Array(Math.min(3, cupoOcupado))].map((_, i) => (
-                            <div key={i} className="w-4 h-4 rounded-full border border-forest bg-cream/10 flex items-center justify-center">
-                              <Users size={8} className="text-cream/40" />
-                            </div>
-                          ))}
+                      <p className="text-cream/40 text-xs line-clamp-1 mb-2">{h.tipoClase?.descripcion}</p>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5 text-cream/40 text-[10px] font-bold uppercase tracking-widest">
+                          <Users size={12} className="text-cream/20" />
+                          <span>{cupoOcupado}/{cupoTotal} alumnos</span>
                         </div>
-                        <span className={`text-[10px] font-bold uppercase tracking-tight ${
-                          estaLleno ? 'text-red-400' : cupoDisponible <= 3 ? 'text-orange-400' : 'text-cream/40'
-                        }`}>
-                          {estaLleno ? 'Cupo Completo' : `${cupoDisponible} lugares libres`}
-                        </span>
+                        {estaLleno && !miReserva && (
+                          <div className="flex items-center gap-1 text-amber-500/80 text-[10px] font-bold uppercase tracking-widest">
+                            <AlertTriangle size={12} /> Lista de espera activa
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     {miReserva ? (
                       <button
                         onClick={() => cancelar(miReserva.id, h.id)}
                         disabled={estaProcesando || esPasado}
-                        className={`w-full py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-                          estaProcesando || esPasado
-                            ? 'bg-red-500/20 text-red-500/40 cursor-not-allowed'
-                            : 'bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/30'
-                        }`}
+                        className="w-full sm:w-auto px-6 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-30"
                       >
-                        {estaProcesando ? (
-                          <Loader2 className="animate-spin" size={18} />
-                        ) : (
-                          <>
-                            <X size={18} />
-                            Cancelar
-                          </>
-                        )}
+                        {estaProcesando ? <Loader2 className="animate-spin" size={14} /> : 'Cancelar'}
                       </button>
                     ) : (
                       <button
                         onClick={() => reservar(h.id, fechaSeleccionada)}
-                        disabled={!user?.creditos || estaLleno || estaProcesando || esPasado}
-                        className={`w-full py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-                          !user?.creditos || estaLleno || estaProcesando || esPasado
-                            ? 'bg-white/5 text-white/20 cursor-not-allowed'
-                            : 'bg-cream text-forest-dark hover:bg-white shadow-lg shadow-cream/20'
-                        }`}
+                        disabled={estaProcesando || esPasado}
+                        className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                          estaLleno 
+                            ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/20' 
+                            : 'bg-cream text-forest-dark hover:scale-105 active:scale-95'
+                        } disabled:opacity-30 shadow-lg`}
                       >
                         {estaProcesando ? (
-                          <Loader2 className="animate-spin" size={18} />
-                        ) : esPasado ? (
-                          'Finalizado'
+                          <Loader2 className="animate-spin" size={14} />
                         ) : estaLleno ? (
-                          'Cupo Lleno'
+                          <>Anotarme en espera</>
                         ) : (
-                          <>
-                            <Calendar size={18} />
-                            Reservar
-                          </>
+                          <>Reservar</>
                         )}
                       </button>
                     )}
@@ -381,6 +412,45 @@ export default function UserDashboard() {
           </div>
         )}
       </div>
+
+      {/* Modal QR de Acceso */}
+      {showQR && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-forest-dark/80 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-forest border border-cream/20 rounded-3xl p-8 max-w-sm w-full shadow-2xl shadow-black/50">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-cream/5 rounded-full flex items-center justify-center mb-6 border border-cream/10">
+                <QrCode className="text-cream" size={32} />
+              </div>
+              
+              <h3 className="text-2xl font-display text-cream mb-2 uppercase tracking-wide">MI ACCESO QR</h3>
+              <p className="text-cream/40 text-xs mb-8">Acercalo al lector al llegar al gimnasio</p>
+              
+              <div className="bg-white p-4 rounded-2xl mb-8">
+                <QRCodeCanvas 
+                  value={user?.dni || ''} 
+                  size={200}
+                  level="H"
+                  includeMargin={false}
+                />
+              </div>
+
+              <div className="bg-cream/5 border border-cream/10 rounded-2xl p-4 w-full mb-8">
+                <p className="text-cream font-bold text-lg mb-1">{user?.nombre} {user?.apellido}</p>
+                <p className="text-cream/40 text-[10px] font-black uppercase tracking-widest">
+                  DNI: {user?.dni}
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowQR(false)}
+                className="w-full py-4 rounded-xl bg-cream text-forest-dark font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-cream/10"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
